@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Document</title>
+	<style>
+		body {
+			background-color: rgb(248, 171, 248);
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			height: 100vh;
+			margin: 0;
+			position: relative;
+		}
+
+		.rank-container {
+			position: absolute;
+			top: 22px;
+			left: 22px;
+			background-color: rgba(233, 184, 242, 0.8);
+			padding: 10px;
+			border-radius: 7px;
+			box-shadow: 0 0 10px rgba(219, 74, 74, 0.1);
+		}
+
+		.rank-container h2 {
+			margin-top: 0;
+		}
+
+		.proximasPecas1 {
+			position: absolute;
+			top: 22px;
+			padding: 10px;
+			right: 22px;
+			background-color: rgba(233, 184, 242, 0.8);
+			box-shadow: 0 0 10px rgba(219, 74, 74, 0.1);
+			border-radius: 7px;
+		}
+
+		.proximasPecas1 h2 {
+			margin-top: 0;
+		}
+	</style>
+</head>
+
+<body>
+	<div class="Rank">
+		<canvas id="tela" width="250" height="560"></canvas>
+	</div>
+	<div class="rank-container">
+		<h2>RANKING</h2>
+		<ol id="lista"></ol>
+	</div>
+	<div class="proximasPecas1">
+		<h2>PRÓXIMA PEÇA</h2>
+		<canvas id="proximaPeca" width="100" height="280"></canvas>
+	</div>
+</body>
+
+</html>
+<script>
+	/*
+	   Jogo: Tetris
+	   Autor: Code Explained (www.codeexplained.org)
+	   Adaptado por: Gilson Filho
+	*/
+
+	// Rotina principal
+
+	const I = [
+		[
+			[0, 0, 0, 0],
+			[1, 1, 1, 1],
+			[0, 0, 0, 0],
+			[0, 0, 0, 0],
+		],
+		[
+			[0, 0, 1, 0],
+			[0, 0, 1, 0],
+			[0, 0, 1, 0],
+			[0, 0, 1, 0],
+		],
+		[
+			[0, 0, 0, 0],
+			[0, 0, 0, 0],
+			[1, 1, 1, 1],
+			[0, 0, 0, 0],
+		],
+		[
+			[0, 1, 0, 0],
+			[0, 1, 0, 0],
+			[0, 1, 0, 0],
+			[0, 1, 0, 0],
+		]
+	];
+
+	const J = [
+		[
+			[1, 0, 0],
+			[1, 1, 1],
+			[0, 0, 0]
+		],
+		[
+			[0, 1, 1],
+			[0, 1, 0],
+			[0, 1, 0]
+		],
+		[
+			[0, 0, 0],
+			[1, 1, 1],
+			[0, 0, 1]
+		],
+		[
+			[0, 1, 0],
+			[0, 1, 0],
+			[1, 1, 0]
+		]
+	];
+
+	const L = [
+		[
+			[0, 0, 1],
+			[1, 1, 1],
+			[0, 0, 0]
+		],
+		[
+			[0, 1, 0],
+			[0, 1, 0],
+			[0, 1, 1]
+		],
+		[
+			[0, 0, 0],
+			[1, 1, 1],
+			[1, 0, 0]
+		],
+		[
+			[1, 1, 0],
+			[0, 1, 0],
+			[0, 1, 0]
+		]
+	];
+
+	const O = [
+		[
+			[0, 0, 0, 0],
+			[0, 1, 1, 0],
+			[0, 1, 1, 0],
+			[0, 0, 0, 0],
+		]
+	];
+
+	const S = [
+		[
+			[0, 1, 1],
+			[1, 1, 0],
+			[0, 0, 0]
+		],
+		[
+			[0, 1, 0],
+			[0, 1, 1],
+			[0, 0, 1]
+		],
+		[
+			[0, 0, 0],
+			[0, 1, 1],
+			[1, 1, 0]
+		],
+		[
+			[1, 0, 0],
+			[1, 1, 0],
+			[0, 1, 0]
+		]
+	];
+
+	const T = [
+		[
+			[0, 1, 0],
+			[1, 1, 1],
+			[0, 0, 0]
+		],
+		[
+			[0, 1, 0],
+			[0, 1, 1],
+			[0, 1, 0]
+		],
+		[
+			[0, 0, 0],
+			[1, 1, 1],
+			[0, 1, 0]
+		],
+		[
+			[0, 1, 0],
+			[1, 1, 0],
+			[0, 1, 0]
+		]
+	];
+
+	const Z = [
+		[
+			[1, 1, 0],
+			[0, 1, 1],
+			[0, 0, 0]
+		],
+		[
+			[0, 0, 1],
+			[0, 1, 1],
+			[0, 1, 0]
+		],
+		[
+			[0, 0, 0],
+			[1, 1, 0],
+			[0, 1, 1]
+		],
+		[
+			[0, 1, 0],
+			[1, 1, 0],
+			[1, 0, 0]
+		]
+	];
+
+	const PECAS = [
+		[Z, "red"],
+		[S, "LimeGreen"],
+		[T, "DarkViolet"],
+		[O, "yellow"],
+		[L, "DarkOrange"],
+		[I, "DarkTurquoise"],
+		[J, "MediumBlue"]
+	];
+
+	const LINHA = 20;
+	const COLUNA = 10;
+	const TAMANHO = 25;
+	const VAGO = "black";
+	const audioEliminaLinha = new Audio("./audios/EliminaLinha.mp3"); //audios
+	const audioFimJogo = new Audio("./audios/FimJogo.mp3");
+	const audioMovimento = new Audio("./audios/Movimento.mp3");
+	const audioMusicaFundo = new Audio("./audios/MusicaFundo.mp3");
+	const audioRotacaoPeca = new Audio("./audios/Rotacao-da-peca.mp3");
+	const audioTravamento = new Audio("./audios/travamento.mp3");
+	const TETRAMINO = ['z', 's', 't', 'o', 'l', 'i', 'j'];
+
+	var stats = { //estatistica
+		'z': 0,
+		's': 0,
+		't': 0,
+		'o': 0,
+		'l': 0,
+		'i': 0,
+		'j': 0
+	}
+
+	var peca;
+	var proximaPeca
+	var tabuleiro = [];
+
+	var inicioDescida;
+	var fimDeJogo = false;
+	var nivel = 1;
+	var linhaRemovida = 0;
+	var pontuacao = 0;
+	var ranking = [];
+	let nome;
+	let intervaloMilisecs = 666
+	let proximasPecas = []
+	let numerodePecas = 1
+	var linhaRemovidaTotal = 0;
+
+	var tela = document.getElementById("tela");
+	var c = tela.getContext("2d");
+
+	onkeydown = controlarPeca;
+
+	c.fillStyle = 'DimGray';
+	c.fillRect(0, 500, 250, 60);
+	c.font = "23px arial";
+	c.fillStyle = "white";
+	c.fillText("Nivel " + nivel + "  Pontos " + pontuacao, 0, 525);
+	c.fillText("Linhas Removidas " + linhaRemovidaTotal, 0, 550);
+	
+	iniciarTabuleiro();
+
+	desenharTabuleiro();
+
+	gerarPeca();
+
+	inicioDescida = Date.now();
+
+	descerPeca();
+
+	// Sub-rotinas (funções)
+
+	function iniciarTabuleiro() {
+		for (var i = 0; i < LINHA; i++) {
+			tabuleiro[i] = [];
+
+			for (var j = 0; j < COLUNA; j++) {
+				tabuleiro[i][j] = VAGO;
+			}
+		}
+	}
+
+	function desenharTabuleiro() {
+		for (var i = 0; i < LINHA; i++) {
+			for (var j = 0; j < COLUNA; j++) {
+				desenharQuadrado(j, i, tabuleiro[i][j]);
+			}
+		}
+	}
+
+	function desenharQuadrado(x, y, cor) {
+		c.fillStyle = cor;
+		c.fillRect(x * TAMANHO, y * TAMANHO, TAMANHO, TAMANHO);
+
+		c.strokeStyle = "DarkSlateGray";
+		c.strokeRect(x * TAMANHO, y * TAMANHO, TAMANHO, TAMANHO);
+	}
+
+	function gerarPeca() {
+		if (!proximaPeca) {
+			var r = Math.floor(Math.random() * PECAS.length);
+			stats[TETRAMINO[r]]++;
+			peca = {
+				tetramino: PECAS[r][0],
+				cor: PECAS[r][1],
+				tetraminoN: 0,
+				tetraminoAtivo: [[]],
+				x: 3,
+				y: -2
+			};
+		} else {
+			peca = proximaPeca;
+		}
+
+		var r = Math.floor(Math.random() * PECAS.length);
+		stats[TETRAMINO[r]]++;
+		proximaPeca = {
+			tetramino: PECAS[r][0],
+			cor: PECAS[r][1],
+			tetraminoN: 0,
+			tetraminoAtivo: [[]],
+			x: 3,
+			y: -2
+		};
+		peca.tetraminoAtivo = peca.tetramino[peca.tetraminoN];
+		proximaPeca.tetraminoAtivo = proximaPeca.tetramino[proximaPeca.tetraminoN];
+		ListarProximaPeca();
+	}
+
+	function ListarProximaPeca() {
+		const ProximaPecas = document.getElementById("proximaPeca"); // selecionando o canvas que sera impresso na tela
+		const context = ProximaPecas.getContext("2d");
+
+		context.clearRect(0, 0, ProximaPecas.width, ProximaPecas.height); // limpando o canvas de ser impresso
+
+		const espacamento = 20
+		const tamanhoQuadrado = 20; // variavel de configuracao das pecas
+		const setx = (ProximaPecas.width - (proximaPeca.tetraminoAtivo[0].length * tamanhoQuadrado)) / 2; // variavel de configuracao das pecas
+		const sety = (ProximaPecas.height - (proximaPeca.tetraminoAtivo.length * tamanhoQuadrado)) / 2;  // variavel de configuracao das pecas
+
+		for (let r = 0; r < proximaPeca.tetraminoAtivo.length; r++) {
+			for (let c = 0; c < proximaPeca.tetraminoAtivo[r].length; c++) {
+				if (proximaPeca.tetraminoAtivo[r][c]) {
+					context.fillStyle = proximaPeca.cor;
+					context.fillRect(setx + c * tamanhoQuadrado, sety + r * tamanhoQuadrado, tamanhoQuadrado, tamanhoQuadrado);
+					context.strokeStyle = "white"; // cor de borda
+					context.strokeRect(setx + c * tamanhoQuadrado, sety + r * tamanhoQuadrado, tamanhoQuadrado, tamanhoQuadrado); // estrutura responsavel pelo desenho da peca
+				}
+			}
+		}
+	}
+
+	function descerPeca() {
+		var agora = Date.now();
+		var delta = agora - inicioDescida;
+		var intervaloTempo = intervaloMilisecs / nivel;
+
+		if (delta > intervaloTempo) {
+			moverAbaixo();
+			inicioDescida = Date.now();
+		}
+		if (!fimDeJogo) {
+			requestAnimationFrame(descerPeca);
+		}
+	}
+
+	
+	function moverAbaixo() {
+		if (!colisao(0, 1, peca.tetraminoAtivo)) {
+			apagarPeca();
+			peca.y++;
+			desenharPeca();
+		} else {
+			travarPeca();
+			gerarPeca();
+		}
+	}
+
+
+	function moverDireita() {
+		if (!colisao(1, 0, peca.tetraminoAtivo)) { //(1) representa a movimentação para a esquerda e o 0 (para  a vertical)
+			apagarPeca(); // peça apagada na posição anterior
+			peca.x++;   // posição da peça atualizada
+			desenharPeca(); // peça na nova posição desenhada
+		}
+	}
+
+	function moverEsquerda() {
+		if (!colisao(-1, 0, peca.tetraminoAtivo)) { //(-1) representa a movimentação para a esquerda e o 0(para  a vertical)
+			apagarPeca(); // peça apagada na posição anterior
+			peca.x--; // posição da peça atualizada
+			desenharPeca(); // peça na nova posição desenhada
+		}
+	}
+
+	function colisao(x, y, p) {
+		for (var i = 0; i < p.length; i++) {
+			for (var j = 0; j < p.length; j++) {
+				if (!p[i][j]) {
+					continue;
+				}
+
+				var novoX = peca.x + j + x;
+				var novoY = peca.y + i + y;
+
+				if (novoX < 0 || novoX >= COLUNA || novoY >= LINHA) {
+					return true;
+				}
+
+				if (novoY < 0) {
+					continue;
+				}
+
+				if (tabuleiro[novoY][novoX] != VAGO) {
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+
+	function apagarPeca() {
+		preencherPeca(VAGO);
+	}
+
+	function desenharPeca() {
+		preencherPeca(peca.cor);
+	}
+
+	function preencherPeca(cor) {
+		for (var i = 0; i < peca.tetraminoAtivo.length; i++) {
+			for (var j = 0; j < peca.tetraminoAtivo[i].length; j++) {
+				if (peca.tetraminoAtivo[i][j]) {
+					desenharQuadrado(peca.x + j, peca.y + i, cor);
+				}
+			}
+		}
+	}
+
+	function travarPeca() {
+		for (var i = 0; i < peca.tetraminoAtivo.length; i++) {
+			for (var j = 0; j < peca.tetraminoAtivo.length; j++) {
+				if (!peca.tetraminoAtivo[i][j]) {
+					audioTravamento.play();
+					continue;
+				}
+
+				if (peca.y + i < 0) {
+					//alert("Fim de Jogo");
+					fimDeJogo = true;
+					audioFimJogo.play();
+					c.fillStyle = 'DimGray';
+					c.fillRect(25, 120, 200, 35);
+					c.font = "30px arial";
+					c.strokeStyle = "white";
+					c.strokeText("FIM DE JOGO", 25, 150);
+					c.fillStyle = 'DimGray';
+					c.fillRect(25, 170, 200, 230);
+					c.font = "20px arial";
+					c.fillStyle = "white";
+					c.fillText("Estatistica", 80, 200);
+					c.font = "16px arial";
+					for(var i = 0; i < 7; i++) {
+						c.fillText(TETRAMINO[i] + ": " + stats[TETRAMINO[i]], 108, 230 + i*25);
+					}
+					nome = prompt("Digite seu nick:");
+					adicionarRanking(nome, pontuacao)
+					exibirRanking()
+					break;
+				}
+
+				tabuleiro[peca.y + i][peca.x + j] = peca.cor;
+			}
+		}
+		var removerlinha = 0;
+		for (var i = 0; i < LINHA; i++) {
+			var linhaCheia = true;
+
+			for (var j = 0; j < COLUNA; j++) {
+				linhaCheia = linhaCheia && (tabuleiro[i][j] != VAGO);
+			}
+
+			if (linhaCheia) {
+				removerlinha++;
+				audioEliminaLinha.play();
+				c.fillStyle = 'DimGray';
+				c.fillRect(0, 500, 250, 60);
+				c.font = "23px arial";
+				c.fillStyle = "white";
+				c.fillText("Nivel " + nivel + "  Pontos " + pontuacao, 0, 525);
+				c.fillText("Linhas Removidas " + linhaRemovidaTotal, 0, 550);
+				for (var y = i; y > 1; y--) {
+					for (var j = 0; j < COLUNA; j++) {
+						tabuleiro[y][j] = tabuleiro[y - 1][j];
+					}
+				}
+
+				for (var j = 0; j < COLUNA; j++) {
+					tabuleiro[0][j] = VAGO;
+				}
+
+				switch (removerlinha) {
+					case 1:
+						pontuacao += 100 * nivel;
+						break;
+					case 2:
+						pontuacao += 300 * nivel;
+						break;
+					case 3:
+						pontuacao += 500 * nivel;
+						break;
+					case 4:
+						pontuacao += 800 * nivel;
+						break;
+				}
+
+				linhaRemovida++;
+				linhaRemovidaTotal++;
+
+				if (linhaRemovida == 10) {
+					nivel++;
+					linhaRemovida = 0;
+				}
+			}
+		}
+
+		desenharTabuleiro();
+	}
+
+	function rodarPeca() {
+		var proximoPadrao = peca.tetramino[(peca.tetraminoN + 1) % peca.tetramino.length];
+		var recuo = 0;
+
+		if (colisao(0, 0, proximoPadrao)) {
+			if (peca.x > COLUNA / 2) {
+				recuo = -1;
+			} else {
+				recuo = 1;
+			}
+		}
+
+		if (!colisao(recuo, 0, proximoPadrao)) {
+			apagarPeca();
+			peca.x += recuo;
+			peca.tetraminoN = (peca.tetraminoN + 1) % peca.tetramino.length;
+			peca.tetraminoAtivo = peca.tetramino[peca.tetraminoN];
+			desenharPeca();
+		}
+	}
+
+	function rodarEsquerda() {
+		var proximoPadrao = peca.tetramino[(peca.tetraminoN - 1 + peca.tetramino.length) % peca.tetramino.length];
+		var recuo = 0;
+
+		if (colisao(0, 0, proximoPadrao)) {
+			if (peca.x > COLUNA / 2) {
+				recuo = -1;
+			} else {
+				recuo = 1;
+			}
+		}
+
+		if (!colisao(recuo, 0, proximoPadrao)) {
+			apagarPeca();
+			peca.x += recuo;
+			peca.tetraminoN = (peca.tetraminoN + 1) % peca.tetramino.length;
+			peca.tetraminoAtivo = peca.tetramino[peca.tetraminoN];
+			desenharPeca();
+		}
+	}
+
+	function controlarPeca(evento) {
+		var tecla = evento.keyCode;
+
+		if (tecla == 37) {
+			moverEsquerda(); // seta esquerda
+			audioMovimento.play();
+			inicioDescida = Date.now();
+		} else if (tecla == 38) {
+			rodarPeca(); // tecla cima
+			audioRotacaoPeca.play();
+			inicioDescida = Date.now();
+		} else if (tecla == 39) {
+			moverDireita(); // tecla direita
+			audioMovimento.play();
+			inicioDescida = Date.now();
+		} else if (tecla == 40) {
+			moverAbaixo(); // tecla baixo
+			audioMovimento.play();
+		} else if (tecla == 90) {
+			rodarEsquerda(); // tecla z
+			audioRotacaoPeca.play();
+		} else if (tecla == 32) {
+			moverAbaixo(); // tecla espaco
+		}
+	}
+
+
+	function adicionarRanking(nome, pontuacao) {
+		var string = localStorage.getItem("aaa");
+		if (string) {
+			ranking = JSON.parse(string);
+		}
+		
+		ranking.push({
+			nome: nome,
+			pontuacao: parseInt(pontuacao)
+		});
+		localStorage.setItem("aaa", JSON.stringify(ranking));
+	}
+
+	function exibirRanking() {
+		for (var i = 0; i < ranking.length - 1; i++) {
+			for (var j = 0; j < ranking.length - 1 - i; j++) {
+				if (ranking[j].pontuacao <= ranking[j + 1].pontuacao) {
+					var aux = ranking[j];
+					ranking[j] = ranking[j + 1];
+					ranking[j + 1] = aux;
+				}
+			}
+		}
+		let lista = document.getElementById("lista");
+		lista.innerHTML = "";
+		for (let i = 0; i < 10; i++) {
+			let item = document.createElement("li");
+			item.innerHTML = `${ranking[i].nome}: ${ranking[i].pontuacao}`;
+			lista.appendChild(item);
+		}
+	}
+
+</script>
